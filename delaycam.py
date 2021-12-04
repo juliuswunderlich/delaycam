@@ -5,6 +5,7 @@ import time
 cap = cv2.VideoCapture(0)
 queue = []
 DELAY_DURATION = 5 #in seconds
+SLOW_MO_AMOUNT = 1 # ramp this up to achieve somewhat of slowmotion
 
 # Check if the webcam is opened correctly
 if not cap.isOpened():
@@ -16,19 +17,18 @@ def producer():
     while True:
         ret, frame = cap.read()
         #frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
-        queue.append(frame)
+        if len(queue) < int(30 * DELAY_DURATION):
+            queue.append(frame)
 
 producerThread = threading.Thread(target=producer)
 producerThread.start()
 
 while True:
-    if len(queue) < 30 * DELAY_DURATION:
+    if len(queue) < int(30 * DELAY_DURATION):
         continue
-    print(len(queue))
     frame = queue.pop(0)
     cv2.imshow('Video Stream', frame)
 
     # waitKey required
-    c = cv2.waitKey(1)
-    if c == 27:
+    if cv2.waitKey(SLOW_MO_AMOUNT) & 0xFF == ord('q'):
         break
